@@ -6,20 +6,6 @@ import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import Transactions from './pages/Transactions'
 
-function Layout({ children }) {
-  return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <header className="border-b bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="text-xl font-semibold">Expense Tracker</Link>
-          <NavLinks />
-        </div>
-      </header>
-      <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
-    </div>
-  )
-}
-
 function NavLinks() {
   const { user, logout } = useAuth()
   if (!user) {
@@ -39,7 +25,19 @@ function NavLinks() {
   )
 }
 
-// Components are imported from pages folder
+function Layout({ children }) {
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      <header className="border-b bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+          <Link to="/" className="text-xl font-semibold">Expense Tracker</Link>
+          <NavLinks />
+        </div>
+      </header>
+      <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+    </div>
+  )
+}
 
 function Protected({ children }) {
   const { user, loading } = useAuth()

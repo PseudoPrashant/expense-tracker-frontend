@@ -12,11 +12,7 @@ function Layout({ children }) {
       <header className="border-b bg-white">
         <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
           <Link to="/" className="text-xl font-semibold">Expense Tracker</Link>
-          <nav className="flex gap-4 text-sm">
-            <Link to="/dashboard" className="hover:underline">Dashboard</Link>
-            <Link to="/transactions" className="hover:underline">Transactions</Link>
-            <Link to="/login" className="hover:underline">Login</Link>
-          </nav>
+          <NavLinks />
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
@@ -24,36 +20,26 @@ function Layout({ children }) {
   )
 }
 
-function Dashboard() {
+function NavLinks() {
+  const { user, logout } = useAuth()
+  if (!user) {
+    return (
+      <nav className="flex gap-4 text-sm">
+        <Link to="/login" className="hover:underline">Login</Link>
+        <Link to="/signup" className="hover:underline">Sign up</Link>
+      </nav>
+    )
+  }
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Dashboard</h2>
-      <p className="text-gray-600">Charts and summaries will appear here.</p>
-    </div>
+    <nav className="flex gap-4 text-sm items-center">
+      <Link to="/dashboard" className="hover:underline">Dashboard</Link>
+      <Link to="/transactions" className="hover:underline">Transactions</Link>
+      <button onClick={logout} className="text-red-600">Logout</button>
+    </nav>
   )
 }
 
-function Transactions() {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Transactions</h2>
-      <p className="text-gray-600">List, filter, and manage your transactions.</p>
-    </div>
-  )
-}
-
-function Login() {
-  return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow">
-      <h2 className="text-xl font-semibold mb-4">Login</h2>
-      <form className="space-y-3">
-        <input className="w-full border rounded px-3 py-2" placeholder="Email" />
-        <input className="w-full border rounded px-3 py-2" type="password" placeholder="Password" />
-        <button className="w-full bg-blue-600 text-white rounded px-3 py-2">Login</button>
-      </form>
-    </div>
-  )
-}
+// Components are imported from pages folder
 
 function Protected({ children }) {
   const { user, loading } = useAuth()

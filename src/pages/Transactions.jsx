@@ -38,6 +38,26 @@ export default function Transactions() {
     fetchItems()
   }
 
+  const exportCSV = async () => {
+    try {
+      const response = await api.get('/transactions/export/csv', {
+        responseType: 'blob'
+      })
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'transactions.csv')
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Export failed:', error)
+      alert('Failed to export CSV')
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="bg-white p-4 rounded shadow">
@@ -57,6 +77,7 @@ export default function Transactions() {
           <input type="date" className="border rounded px-2 py-2" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
           <input className="border rounded px-2 py-2" placeholder="Search" value={search} onChange={(e) => setSearch(e.target.value)} />
           <button onClick={fetchItems} className="bg-blue-600 text-white rounded px-3 py-2">Apply</button>
+          <button onClick={exportCSV} className="bg-green-600 text-white rounded px-3 py-2">Export CSV</button>
         </div>
       </div>
 

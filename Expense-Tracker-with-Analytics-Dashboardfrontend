@@ -1,0 +1,5 @@
+[33m38a124e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m fix: remove duplicate component declarations from App.jsx
+[33m79cf99e[m frontend: add Export CSV button on Transactions page using JWT token
+[33m33bac82[m frontend: docs for setup/deploy, logout UI, protected routes
+[33mb846bb8[m frontend: auth context, login/signup pages, dashboard charts, transactions CRUD UI, API client
+[33m3e99029[m frontend: scaffold vite react app, tailwind config, basic routing

@@ -1,18 +1,18 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '../lib/api'
-
-const categories = ['Food', 'Travel', 'Rent', 'Shopping', 'Entertainment', 'Misc', 'Income']
+import { categories } from '../lib/constants'
+import TransactionForm from '../components/transactions/TransactionForm'
 
 export default function Transactions() {
-  const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
   const [type, setType] = useState('')
   const [category, setCategory] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [search, setSearch] = useState('')
 
-  const query = useMemo(() => {
+  const queryStr = useMemo(() => {
     const q = new URLSearchParams()
     if (type) q.set('type', type)
     if (category) q.set('category', category)
@@ -22,21 +22,23 @@ export default function Transactions() {
     return q.toString()
   }, [type, category, startDate, endDate, search])
 
-  const fetchItems = async () => {
-    setLoading(true)
-    const { data } = await api.get(`/transactions${query ? `?${query}` : ''}`)
-    setItems(data)
-    setLoading(false)
-  }
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ['transactions', queryStr],
+    queryFn: async () => {
+      const { data } = await api.get(`/transactions${queryStr ? `?${queryStr}` : ''}`)
+      return data
+    }
+  })
 
-  useEffect(() => {
-    fetchItems()
-  }, [query])
-
-  const onDelete = async (id) => {
-    await api.delete(`/transactions/${id}`)
-    fetchItems()
-  }
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      await api.delete(`/transactions/${id}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-analytics'] })
+    }
+  })
 
   const exportCSV = async () => {
     try {
@@ -76,12 +78,12 @@ export default function Transactions() {
           <input type="date" className="border rounded px-2 py-2" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
           <input type="date" className="border rounded px-2 py-2" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
           <input className="border rounded px-2 py-2" placeholder="Search" value={search} onChange={(e) => setSearch(e.target.value)} />
-          <button onClick={fetchItems} className="bg-blue-600 text-white rounded px-3 py-2">Apply</button>
+          <button className="bg-blue-600 text-white rounded px-3 py-2 opacity-50 cursor-not-allowed">Auto-applied</button>
           <button onClick={exportCSV} className="bg-green-600 text-white rounded px-3 py-2">Export CSV</button>
         </div>
       </div>
 
-      <TransactionForm onCreated={fetchItems} />
+      <TransactionForm />
 
       <div className="bg-white rounded shadow overflow-x-auto">
         <table className="min-w-full">
@@ -96,10 +98,10 @@ export default function Transactions() {
             </tr>
           </thead>
           <tbody>
-            {loading ? (
-              <tr><td className="p-3" colSpan={6}>Loading...</td></tr>
+            {isLoading ? (
+              <tr><td className="p-3 text-center text-gray-500" colSpan={6}>Loading...</td></tr>
             ) : items.length === 0 ? (
-              <tr><td className="p-3" colSpan={6}>No transactions</td></tr>
+              <tr><td className="p-3 text-center text-gray-500" colSpan={6}>No transactions</td></tr>
             ) : (
               items.map((tx) => (
                 <tr key={tx._id} className="border-b last:border-0">
@@ -109,7 +111,13 @@ export default function Transactions() {
                   <td className="p-3">₹ {Number(tx.amount).toFixed(2)}</td>
                   <td className="p-3">{tx.description}</td>
                   <td className="p-3">
-                    <button onClick={() => onDelete(tx._id)} className="text-red-600">Delete</button>
+                    <button 
+                      onClick={() => deleteMutation.mutate(tx._id)} 
+                      disabled={deleteMutation.isPending}
+                      className="text-red-600 disabled:opacity-50"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))
@@ -120,48 +128,3 @@ export default function Transactions() {
     </div>
   )
 }
-
-function TransactionForm({ onCreated }) {
-  const [type, setType] = useState('expense')
-  const [amount, setAmount] = useState('')
-  const [category, setCategory] = useState('Food')
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
-  const [description, setDescription] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const onSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      await api.post('/transactions', { type, amount: Number(amount), category, date, description })
-      setAmount('')
-      setDescription('')
-      onCreated?.()
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div className="bg-white p-4 rounded shadow">
-      <h3 className="font-semibold mb-3">Add Transaction</h3>
-      <form className="grid grid-cols-2 md:grid-cols-6 gap-3 items-end" onSubmit={onSubmit}>
-        <select className="border rounded px-2 py-2" value={type} onChange={(e) => setType(e.target.value)}>
-          <option value="expense">Expense</option>
-          <option value="income">Income</option>
-        </select>
-        <input className="border rounded px-2 py-2" type="number" placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-        <select className="border rounded px-2 py-2" value={category} onChange={(e) => setCategory(e.target.value)}>
-          {categories.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-        <input className="border rounded px-2 py-2" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        <input className="border rounded px-2 py-2" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
-        <button disabled={loading} className="bg-green-600 text-white rounded px-3 py-2">{loading ? 'Saving...' : 'Add'}</button>
-      </form>
-    </div>
-  )
-}
-
-

@@ -1,12 +1,36 @@
-# React + Vite
+# Expense Tracker Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend application for the Expense Tracker, built with React and Vite.
 
-Currently, two official plugins are available:
+## Tech Stack
+- React 19
+- Vite
+- React Router v7
+- Tailwind CSS v4
+- Chart.js & React-Chartjs-2
+- Axios
+- TanStack React Query v5 (Data Fetching & Caching)
+- React Hook Form & Zod (Form Validation)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Project Structure
+The project has been refactored for scalability with a clear separation of concerns:
 
-## Expanding the ESLint configuration
+- `src/components/` - Reusable UI components.
+  - `layout/` - `Navbar`, `Layout`, and `ProtectedRoute` components.
+  - `dashboard/` - Dashboard specific components like `StatCard`.
+  - `transactions/` - Transaction specific components like `TransactionForm`.
+- `src/pages/` - Main page views (`Login`, `Signup`, `Dashboard`, `Transactions`).
+- `src/context/` - Global state context (e.g., `AuthContext`).
+- `src/lib/` - Utilities and configuration (e.g., Axios setup in `api.js`, shared `constants.js`).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Getting Started
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Run the development server:
+   ```bash
+   npm run dev
+   ```
